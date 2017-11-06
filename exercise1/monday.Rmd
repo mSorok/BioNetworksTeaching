@@ -1,0 +1,140 @@
+---
+title: "Biological networks - exercise 1 solution"
+output: 
+    html_notebook:
+    highlight: tango
+    mathjax: null
+    theme: spacelab
+    toc: yes
+    toc_float: yes
+---
+
+##Introduction to igraph
+
+###1:The igraph package.
+
+```{r}
+library(igraph)
+
+```
+In the context of graph theory, a graph is a connection of points and lines connecting a subset of them. The points of the graph are called <b>vertices</b> or <b>nodes</b>. The lines connecting the vertices of a graph are known as <b>edges</b>. The edges of graphs can be imbued with directedness. If there are arrows on one or both endpoints of the edges of a graph to indicate directedness, the graph is said to be <b>directed</b>. Otherwise, if the edges are undirected, the network is said to be <b>undirected</b>. 
+
+Each edge of a graph can also have an associated numerical value, called a <b>weight</b>. Usually, the edge weights are non-negative integers. For example, if a graph represents a road network, the weights could represent the length of each road.
+
+###2:Creating a network graph and visualizing it
+
+In your exercice sheet, there is an example of a network graph. It is a weighted, undirected network. Our goal is to recreate this network as an igraph object in R. We will do that in two steps
+
+####a)Create a graph with the same number of nodes and the same number of edges between each of those nodes. The nodes should have the same name as in the image.
+
+```{r}
+mygraph <- graph(edges= c("E","F", "E","D", "F","D", "D","C", "D","A", "A","B", "B","C", "C","H", "C","G", "G","H", "G","I", "G","J", "I","J"), directed=FALSE)
+plot(mygraph) #A simple graph of the network
+```
+
+```{r}
+mygraph
+```
+```{r}
+V(mygraph)
+```
+####b)Set the weights as in the image.
+
+
+```{r}
+E(mygraph)
+```
+```{r}
+E(mygraph)$weight <-c(2,4,1,4,3,2,1,3,7,2,1,3,1)
+E(mygraph)$weight 
+```
+
+Now, we can plot the graph. We want to visualize the weight of the edges. One way is to have the edge width be proportional to each edge's weight. 
+
+```{r}
+plot(mygraph,edge.width=E(mygraph)$weight) 
+```
+
+We can also change the place of the vertices and edges of a graph on a 2D plane or in 3D space in a way which is more visually pleasing to our eyes. There are many different layouts available in igraph. A few examples:
+
+<b>Circular layout</b>
+```{r}
+plot(mygraph,edge.width=E(mygraph)$weight, layout=layout.circle) 
+```
+This layout places the vertices uniformly in a circle
+
+<b>Fruchterman-Reingold layout</b>
+```{r}
+plot(mygraph,edge.width=E(mygraph)$weight, layout=layout.fruchterman.reingold) 
+```
+This is a force-directed layout, placing the vertices on a plane according to the Fruchterman-Reingold algorithm.
+
+<b>Star layout</b>
+```{r}
+
+plot(mygraph,edge.width=E(mygraph)$weight, layout=layout.star) 
+```
+
+###3.Vertex Degree
+
+The <b>degree</b> of a vertex of a graph is the number of edges incident to the vertex. The igraph package has a built-in function that can calculate the degree of every vertex of the network.
+
+```{r}
+degree(mygraph)
+```
+
+The goal is to write a function that can also do that. 
+
+```{r}
+get_degrees = function(g) {
+adj = get.adjacency(g) #Converting the graph to an adjacency matrix.
+acc = rep(NA,nrow(adj))#Creating an empty vector with the same length as the number of vertices
+names(acc)<-rownames(adj)#Naming the vector elements with the same names as the vertices.
+for (i in 1:nrow(adj)) { #Using a for-loop
+      acc[i] = sum(adj[i,])
+}
+return(acc)
+}
+
+get_degrees(mygraph)
+```
+
+###4.The Dijkstra algorithm
+
+Finding the shortest path between two nodes in a graph is a common problem. It has applications ranging from biological system -studying how infectious diseases spread- to navigation to find the shortest route from one city to another. A widely used algorithm to determine the shortest path is Dijkstra. In this exercise, you have to determine the shortest path between the point E to J of the graph above. For this purpose, you will need to implement the Dijkstra algorithm.
+
+ *The implementation will be part of the homework!*
+
+
+###5.(Optional)Degree distributions of some interesting random graphs
+
+A random graph is a graph that is obtained by randomly sampling from a collection of graphs. This collection may be characterized by certain graph parameters having fixed values.
+
+In the Erdos-Renyi random graph model, G(n,p)is the random graph obtained by starting with vertex set V={1,2,3...n},letting 0≤p≤1, and connecting each pair vertices{i, j} by a edge with probability p.
+```{r}
+erdos = erdos.renyi.game(100, p = 0.3)
+plot(erdos)
+```
+The Barabasi-Albert model is a very simple stochastic algorithm for generating random scale-free networks using a preferential attachment mechanism.
+
+```{r}
+barabasi = barabasi.game(100)
+plot(barabasi)
+```
+make_lattice creates lattice graphs
+```{r}
+lat = make_lattice(dimvector = c(10,10))
+plot(lat)
+```
+Let's calculate and plot their degree distributions. 
+```{r}
+  plot(sort(degree(erdos), decreasing = T), type="l")
+```
+
+```{r}
+  plot(sort(degree(barabasi), decreasing = T), type="l")
+```
+
+```{r}
+  plot(sort(degree(lat), decreasing = T), type="l")
+```
